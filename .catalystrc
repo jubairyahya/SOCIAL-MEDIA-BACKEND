@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "13252000000013092",
+      "name": "zuconnectbackend",
+      "domain": {
+        "id": "30041194962",
+        "name": "zuconnectbackend-20113548633.development"
+      },
+      "timezone": "Europe/London",
+      "env": [
+        {
+          "idx": 1,
+          "id": "20113548633",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}

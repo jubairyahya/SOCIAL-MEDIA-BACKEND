@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT || 8080;
 
 // --- MIDDLEWARE ---
 app.use(cors({ origin: true, credentials: true }));
