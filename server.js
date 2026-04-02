@@ -19,7 +19,14 @@ const app = express();
 const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT || 8080;
 
 // --- MIDDLEWARE ---
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+    origin: [
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "https://social-media-api-30041194962.development.catalystappsail.eu"
+    ],
+    credentials: true
+}));
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.static("Public")); 
