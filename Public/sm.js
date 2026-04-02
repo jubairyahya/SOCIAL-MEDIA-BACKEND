@@ -249,7 +249,7 @@ function openFeedPostModal(postId) {
 
 document.getElementById('new-post-form').onsubmit = async (e) => {
     e.preventDefault();
-    
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = '⏳ Uploading...';
@@ -258,10 +258,10 @@ document.getElementById('new-post-form').onsubmit = async (e) => {
     try {
         const formData = new FormData(e.target);
         const res = await fetch(`${apiBase}/contents`, { method: 'POST', body: formData });
-        if (res.ok) { 
-            e.target.reset(); 
+        if (res.ok) {
+            e.target.reset();
             showTab('feed-tab');
-            loadFeed(); 
+            loadFeed();
         } else {
             alert('Upload failed, try again.');
         }
@@ -319,7 +319,12 @@ async function loadProfileStats() {
     const nameInput = document.getElementById('new-username');
     if (nameInput) nameInput.value = data.username;
 }
-
+function openMyPost(el) {
+    const imgs = JSON.parse(el.dataset.imgs);
+    const title = el.dataset.title;
+    const desc = el.dataset.desc;
+    openPostModal(imgs, title, desc);
+}
 async function loadMyPosts() {
     const res = await fetch(`${apiBase}/profile/posts`);
     if (!res.ok) return;
@@ -336,34 +341,24 @@ async function loadMyPosts() {
     container.innerHTML = posts.map(post => {
         const imgs = (post.images && post.images.length > 0) ? post.images : (post.image ? [post.image] : []);
         const thumb = imgs[0] || '';
-        const imgsJson = JSON.stringify(imgs).replace(/"/g, '&quot;');
-        const safeTitle = post.title.replace(/'/g, "\'");
-        const safeDesc = post.description.replace(/'/g, "\'");
         return `
-        <div class="my-post-item" id="post-item-${post._id}">
-            <img class="my-post-thumb" src="${thumb}" alt="${post.title}"
-                 style="cursor:pointer;"
-                 onclick="openPostModal(JSON.parse(this.closest('.my-post-item').dataset.imgs), '${safeTitle}', '${safeDesc}')"
-            >
-            <div class="my-post-info" style="cursor:pointer;"
-                 onclick="openPostModal(JSON.parse(this.closest('.my-post-item').dataset.imgs), '${safeTitle}', '${safeDesc}')">
-                <strong>${post.title}</strong>
-                <p>${post.description}</p>
-                <p class="post-date">🕐 ${post.createdAt ? new Date(post.createdAt).toLocaleString('en-GB', {
+    <div class="my-post-item" id="post-item-${post._id}"
+         data-imgs='${JSON.stringify(imgs)}'
+         data-title="${post.title.replace(/"/g, '&quot;')}"
+         data-desc="${post.description.replace(/"/g, '&quot;')}"
+         onclick="openMyPost(this)">
+        <img class="my-post-thumb" src="${thumb}" alt="" style="cursor:pointer;">
+        <div class="my-post-info" style="cursor:pointer;">
+            <strong>${post.title}</strong>
+            <p>${post.description}</p>
+            ${imgs.length > 1 ? `<small style="color:var(--primary-blue);">📷 ${imgs.length} photos</small>` : ''}
+            <p class="post-date">🕐 ${post.createdAt ? new Date(post.createdAt).toLocaleString('en-GB', {
             day: '2-digit', month: 'short', year: 'numeric',
             hour: '2-digit', minute: '2-digit'
         }) : ''}</p>
-                ${imgs.length > 1 ? `<small style="color:var(--primary-blue);">📷 ${imgs.length} photos</small>` : ''}
-            </div>
-            <button class="btn-delete-post" onclick="deletePost('${post._id}')">🗑 Delete</button>
-        </div>`;
-    }).map((html, i) => {
-        const post = posts[i];
-        const imgs = (post.images && post.images.length > 0) ? post.images : (post.image ? [post.image] : []);
-        const tmp = document.createElement('div');
-        tmp.innerHTML = html;
-        tmp.firstElementChild.dataset.imgs = JSON.stringify(imgs);
-        return tmp.innerHTML;
+        </div>
+        <button class="btn-delete-post" onclick="event.stopPropagation(); deletePost('${post._id}')">🗑 Delete</button>
+    </div>`;
     }).join('');
 }
 
