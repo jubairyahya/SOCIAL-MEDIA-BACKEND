@@ -766,6 +766,7 @@ button[type="submit"]:active {
     font-size: 0.9rem;
     line-height: 1.5;
     margin: 4px 0 0;
+    white-space: pre-wrap;
 }
 
 /* ============================================
@@ -1261,6 +1262,7 @@ button[type="submit"]:active {
     line-height: 1.65;
     margin: 0;
     font-size: 0.95rem;
+    white-space: pre-wrap;
 }
 
 .post-view-close {
