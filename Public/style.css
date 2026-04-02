@@ -872,6 +872,12 @@ button[type="submit"]:active {
     cursor: pointer;
     align-self: center;
 }
+.profile-stats-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap;
+    align-items: center;
+}
 
 .stat-btn {
     display: flex;
