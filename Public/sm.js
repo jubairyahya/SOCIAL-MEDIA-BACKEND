@@ -24,7 +24,7 @@ async function init() {
             showTab('feed-tab');
             loadProfileStats();
         } else {
-            // Show guest nav with login button
+            document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('app-nav').classList.remove('hidden');
             document.getElementById('fab').classList.add('hidden');
             document.getElementById('guest-login-btn').style.display = 'inline-flex';
