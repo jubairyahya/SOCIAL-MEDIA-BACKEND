@@ -9,28 +9,28 @@ async function init() {
     try {
         const res = await fetch(`${apiBase}/login-check`);
         const data = await res.json();
-        
+
         if (data.loggedIn) {
             myUserId = data.userId;
 
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('app-section').classList.remove('hidden');
             document.getElementById('app-nav').classList.remove('hidden');
-            document.getElementById('fab').classList.remove('hidden'); 
-            
+            document.getElementById('fab').classList.remove('hidden');
+
             const searchBar = document.querySelector('.search-container');
             if (searchBar) searchBar.classList.remove('hidden');
 
-            showTab('feed-tab'); 
-            loadFeed(); 
+            showTab('feed-tab');
+            loadFeed();
             loadProfileStats();
         } else {
             document.getElementById('auth-section').classList.remove('hidden');
             document.getElementById('app-nav').classList.add('hidden');
             document.getElementById('fab').classList.add('hidden');
         }
-    } catch (err) { 
-        console.error("Server Down or Connection Error:", err); 
+    } catch (err) {
+        console.error("Server Down or Connection Error:", err);
     }
 }
 
@@ -39,7 +39,7 @@ function showTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
     const target = document.getElementById(tabId);
     if (target) target.classList.remove('hidden');
-    
+
     // Update active tab button styling
     document.querySelectorAll('.tabs button[data-tab]').forEach(btn => {
         btn.classList.toggle('active-tab', btn.getAttribute('data-tab') === tabId);
@@ -101,7 +101,7 @@ async function loadFeed() {
 async function searchContent() {
     const q = document.getElementById('search-query').value.trim();
     if (!q) return clearSearch();
-    
+
     const res = await fetch(`${apiBase}/search?q=${encodeURIComponent(q)}`);
     const posts = await res.json();
     renderPosts(posts);
@@ -147,7 +147,7 @@ function buildCarousel(images, postId) {
         `<span class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide('${postId}', ${i})"></span>`
     ).join('');
     const slides = images.map((src, i) =>
-        `<img src="${src}" alt="Post image ${i+1}" class="carousel-slide ${i === 0 ? 'active' : ''}" loading="lazy">`
+        `<img src="${src}" alt="Post image ${i + 1}" class="carousel-slide ${i === 0 ? 'active' : ''}" loading="lazy">`
     ).join('');
     return `
         <div class="carousel" id="carousel-${postId}">
@@ -219,9 +219,13 @@ function renderPosts(posts) {
                 <div class="post-read-hint">Tap to read full post</div>
             </div>
             <div class="post-body">
-                <h3>${post.title}</h3>
-                <p class="post-preview-desc">${post.description}</p>
-            </div>
+             <h3>${post.title}</h3>
+                             <p class="post-preview-desc">${post.description}</p>
+                                <p class="post-date">🕐 ${post.createdAt ? new Date(post.createdAt).toLocaleString('en-GB', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        }) : ''}</p>
+                            </div>
             <div class="post-actions">
                 <button class="btn-like ${likedByMe ? 'liked' : ''}" onclick="toggleLike('${post._id}', this)">
                     <span class="heart">${likedByMe ? '❤️' : '🤍'}</span>
@@ -247,10 +251,10 @@ document.getElementById('new-post-form').onsubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const res = await fetch(`${apiBase}/contents`, { method: 'POST', body: formData });
-    if (res.ok) { 
-        e.target.reset(); 
+    if (res.ok) {
+        e.target.reset();
         showTab('feed-tab');
-        loadFeed(); 
+        loadFeed();
     }
 };
 
@@ -399,9 +403,9 @@ document.getElementById('password-form').onsubmit = async (e) => {
 };
 
 // Logout (moved to profile tab)
-document.getElementById('logout').onclick = async () => { 
-    await fetch(`${apiBase}/login`, { method: 'DELETE' }); 
-    location.reload(); 
+document.getElementById('logout').onclick = async () => {
+    await fetch(`${apiBase}/login`, { method: 'DELETE' });
+    location.reload();
 };
 
 // --- 7. FOLLOWERS / FOLLOWING MODALS ---
@@ -459,7 +463,7 @@ async function loadInbox() {
     const res = await fetch(`${apiBase}/inbox`);
     const msgs = await res.json();
     const list = document.getElementById('inbox-list');
-    
+
     const partners = new Map();
 
     msgs.forEach(m => {
@@ -487,22 +491,22 @@ async function loadInbox() {
 async function openDirectChat(id, name) {
     currentChatUserId = id;
     showTab('inbox-tab');
-    
+
     const chatWin = document.getElementById('chat-window');
     const nameHeader = document.getElementById('chat-with-name');
     const historyDiv = document.getElementById('message-history');
 
     chatWin.classList.remove('hidden');
-    nameHeader.innerText = name; 
-    
+    nameHeader.innerText = name;
+
     const res = await fetch(`${apiBase}/messages/${id}`);
     const history = await res.json();
-    
+
     historyDiv.innerHTML = history.map(m => {
         const side = (m.senderId.toString() === myUserId.toString()) ? 'sent' : 'received';
         return `<div class="msg-bubble ${side}">${m.text}</div>`;
     }).join('');
-    
+
     historyDiv.scrollTop = historyDiv.scrollHeight;
 }
 
@@ -530,10 +534,10 @@ async function toggleLike(postId, btn) {
     const res = await fetch(`${apiBase}/contents/${postId}/like`, { method: 'POST' });
     if (!res.ok) return;
     const data = await res.json();
-    
+
     const heartEl = btn.querySelector('.heart');
     const countEl = btn.querySelector('.like-count');
-    
+
     countEl.textContent = data.likeCount;
     heartEl.textContent = data.likedByMe ? '❤️' : '🤍';
     btn.classList.toggle('liked', data.likedByMe);
@@ -543,16 +547,16 @@ async function toggleLike(postId, btn) {
 function openPostModal(images, title, desc, username) {
     // images can be array or single string (from profile click)
     const imgs = Array.isArray(images) ? images : [images];
-    
+
     const mediaEl = document.getElementById('post-view-media');
     if (imgs.length === 1) {
         mediaEl.innerHTML = `<img src="${imgs[0]}" alt="${title}" style="width:100%;max-height:70vh;object-fit:contain;border-radius:16px 16px 0 0;display:block;background:#000;">`;
     } else {
         const slides = imgs.map((src, i) =>
-            `<img src="${src}" alt="${title} ${i+1}" class="modal-slide ${i===0?'active':''}" style="width:100%;max-height:70vh;object-fit:contain;background:#000;display:none;" ${i===0?'':''}>`
+            `<img src="${src}" alt="${title} ${i + 1}" class="modal-slide ${i === 0 ? 'active' : ''}" style="width:100%;max-height:70vh;object-fit:contain;background:#000;display:none;" ${i === 0 ? '' : ''}>`
         ).join('');
         const dots = imgs.map((_, i) =>
-            `<span class="carousel-dot ${i===0?'active':''}" onclick="goToModalSlide(${i})" style="cursor:pointer;"></span>`
+            `<span class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToModalSlide(${i})" style="cursor:pointer;"></span>`
         ).join('');
         mediaEl.innerHTML = `
             <div class="modal-carousel" id="modal-carousel">
@@ -631,7 +635,7 @@ function toggleTheme() {
 }
 
 // Apply saved theme immediately on load
-(function() {
+(function () {
     const saved = localStorage.getItem('zuzu-theme') || 'light';
     applyTheme(saved);
 })();
