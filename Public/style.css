@@ -862,10 +862,15 @@ button[type="submit"]:active {
     color: var(--text);
 }
 
-.profile-stats-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+.profile-stats-row .logout-btn {
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: none;
+    background: #ff4d4d;
+    color: white;
+    cursor: pointer;
+    align-self: center;
 }
 
 .stat-btn {
