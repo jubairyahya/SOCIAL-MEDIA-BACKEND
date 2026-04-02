@@ -36,6 +36,10 @@ async function init() {
 
 // --- 2. TAB NAVIGATION ---
 function showTab(tabId) {
+    if (tabId !== 'inbox-tab' && chatPollingInterval) {
+        clearInterval(chatPollingInterval);
+        chatPollingInterval = null;
+    }
     document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
     const target = document.getElementById(tabId);
     if (target) target.classList.remove('hidden');
@@ -501,27 +505,48 @@ async function loadInbox() {
         </div>
     `).join('') || "<p style='padding:20px; color:var(--text-muted);'>No messages yet.</p>";
 }
-
+let chatPollingInterval = null;
 async function openDirectChat(id, name) {
     currentChatUserId = id;
     showTab('inbox-tab');
 
     const chatWin = document.getElementById('chat-window');
     const nameHeader = document.getElementById('chat-with-name');
-    const historyDiv = document.getElementById('message-history');
-
     chatWin.classList.remove('hidden');
     nameHeader.innerText = name;
 
+    // Clear any previous polling
+    if (chatPollingInterval) clearInterval(chatPollingInterval);
+
+    await fetchMessages(id);
+
+    // Poll every 3 seconds for new messages
+    chatPollingInterval = setInterval(() => {
+        fetchMessages(id);
+    }, 3000);
+}
+
+async function fetchMessages(id) {
     const res = await fetch(`${apiBase}/messages/${id}`);
     const history = await res.json();
+    const historyDiv = document.getElementById('message-history');
+
+    const wasAtBottom = historyDiv.scrollHeight - historyDiv.scrollTop <= historyDiv.clientHeight + 50;
 
     historyDiv.innerHTML = history.map(m => {
         const side = (m.senderId.toString() === myUserId.toString()) ? 'sent' : 'received';
-        return `<div class="msg-bubble ${side}">${m.text}</div>`;
+        const time = m.createdAt ? new Date(m.createdAt).toLocaleString('en-GB', {
+            hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short'
+        }) : '';
+        return `
+        <div class="msg-bubble ${side}">
+            ${m.text}
+            <div class="msg-time">${time}</div>
+        </div>`;
     }).join('');
 
-    historyDiv.scrollTop = historyDiv.scrollHeight;
+    // Only auto-scroll if user was already at bottom
+    if (wasAtBottom) historyDiv.scrollTop = historyDiv.scrollHeight;
 }
 
 document.getElementById('send-reply-btn').onclick = async () => {
