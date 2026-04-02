@@ -10,32 +10,43 @@ async function init() {
         const res = await fetch(`${apiBase}/login-check`);
         const data = await res.json();
 
+        // Always show feed and search
+        document.getElementById('app-section').classList.remove('hidden');
+        const searchBar = document.querySelector('.search-container');
+        if (searchBar) searchBar.classList.remove('hidden');
+        loadFeed();
         if (data.loggedIn) {
             myUserId = data.userId;
-
             document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('app-section').classList.remove('hidden');
             document.getElementById('app-nav').classList.remove('hidden');
             document.getElementById('fab').classList.remove('hidden');
-
-            const searchBar = document.querySelector('.search-container');
-            if (searchBar) searchBar.classList.remove('hidden');
-
+            document.getElementById('guest-login-btn').style.display = 'none';
             showTab('feed-tab');
-            loadFeed();
             loadProfileStats();
         } else {
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('app-nav').classList.add('hidden');
+            // Show guest nav with login button
+            document.getElementById('app-nav').classList.remove('hidden');
             document.getElementById('fab').classList.add('hidden');
+            document.getElementById('guest-login-btn').style.display = 'inline-flex';
+            showTab('feed-tab');
         }
     } catch (err) {
         console.error("Server Down or Connection Error:", err);
     }
 }
 
+function requireLogin() {
+    document.getElementById('app-section').classList.add('hidden');
+    document.getElementById('auth-section').classList.remove('hidden');
+    document.getElementById('app-nav').classList.add('hidden');
+}
 // --- 2. TAB NAVIGATION ---
 function showTab(tabId) {
+    // Guard protected tabs for guests
+    if (!myUserId && (tabId === 'profile-tab' || tabId === 'inbox-tab' || tabId === 'add-post-tab')) {
+        requireLogin();
+        return;
+    }
     if (tabId !== 'inbox-tab' && chatPollingInterval) {
         clearInterval(chatPollingInterval);
         chatPollingInterval = null;

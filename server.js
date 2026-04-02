@@ -236,13 +236,16 @@ app.post('/contents', upload.array('images', 10), async (req, res) => {
 });
 
 app.get('/feed', async (req, res) => {
-    if (!req.session.isLoggedIn) return res.status(401).json({ error: "Not logged in" });
+    const isLoggedIn = req.session.isLoggedIn;
+    const myId = isLoggedIn ? req.session.userId.toString() : null;
     
-    const user = await db.collection('users').findOne({ _id: new ObjectId(req.session.userId) });
     const posts = await db.collection('contents').find().sort({ createdAt: -1 }).toArray();
     
-    const following = (user.following || []).map(id => id.toString());
-    const myId = req.session.userId.toString();
+    let following = [];
+    if (isLoggedIn) {
+        const user = await db.collection('users').findOne({ _id: new ObjectId(req.session.userId) });
+        following = (user.following || []).map(id => id.toString());
+    }
 
     // Sort: followed users first, then newest within each group
     const sorted = posts.sort((a, b) => {
@@ -256,7 +259,7 @@ app.get('/feed', async (req, res) => {
     const enriched = sorted.map(p => ({
         ...p,
         likeCount: (p.likes || []).length,
-        likedByMe: (p.likes || []).map(id => id.toString()).includes(myId)
+        likedByMe: myId ? (p.likes || []).map(id => id.toString()).includes(myId) : false
     }));
     
     res.json({ feed: enriched, followingIds: following });
