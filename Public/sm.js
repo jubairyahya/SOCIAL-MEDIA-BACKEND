@@ -249,12 +249,27 @@ function openFeedPostModal(postId) {
 
 document.getElementById('new-post-form').onsubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const res = await fetch(`${apiBase}/contents`, { method: 'POST', body: formData });
-    if (res.ok) {
-        e.target.reset();
-        showTab('feed-tab');
-        loadFeed();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '⏳ Uploading...';
+    submitBtn.disabled = true;
+
+    try {
+        const formData = new FormData(e.target);
+        const res = await fetch(`${apiBase}/contents`, { method: 'POST', body: formData });
+        if (res.ok) { 
+            e.target.reset(); 
+            showTab('feed-tab');
+            loadFeed(); 
+        } else {
+            alert('Upload failed, try again.');
+        }
+    } catch (err) {
+        alert('Something went wrong, try again.');
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
     }
 };
 
@@ -334,6 +349,10 @@ async function loadMyPosts() {
                  onclick="openPostModal(JSON.parse(this.closest('.my-post-item').dataset.imgs), '${safeTitle}', '${safeDesc}')">
                 <strong>${post.title}</strong>
                 <p>${post.description}</p>
+                <p class="post-date">🕐 ${post.createdAt ? new Date(post.createdAt).toLocaleString('en-GB', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        }) : ''}</p>
                 ${imgs.length > 1 ? `<small style="color:var(--primary-blue);">📷 ${imgs.length} photos</small>` : ''}
             </div>
             <button class="btn-delete-post" onclick="deletePost('${post._id}')">🗑 Delete</button>
