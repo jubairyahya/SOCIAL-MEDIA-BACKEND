@@ -103,7 +103,12 @@ document.getElementById('register-form').onsubmit = async (e) => {
     });
     if (res.ok) { alert("Success! Please Login."); document.getElementById('show-login').click(); }
 };
-
+function backToFeed() {
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('app-section').classList.remove('hidden');
+    document.getElementById('app-nav').classList.remove('hidden');
+    showTab('feed-tab');
+}
 // --- 4. FEED, SEARCH & POSTING ---
 async function loadFeed() {
     const res = await fetch(`${apiBase}/feed`);
